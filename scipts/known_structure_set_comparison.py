@@ -242,100 +242,17 @@ def compare_AUC(AUC1, AUC2, method1='keth-seq', method2='icSHAPE', savefn='/Shar
 	# savefn = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/keth_vs_icshape.pdf'
 	plt.savefig(savefn)
 
-	df_AUC_common.to_csv(savefn.replace('.pdf', '.txt'), header=True, index=False, sep='\t')
+	# df_AUC_common.to_csv(savefn.replace('.pdf', '.txt'), header=True, index=False, sep='\t')
 
 
-AUC1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/mouse/AUC.txt'
-AUC2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mes/wc/out/mouse/AUC.txt'
+# AUC1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/mouse/AUC.txt'
+# AUC2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mes/wc/out/mouse/AUC.txt'
 # compare_AUC(AUC1, AUC2)
 
-AUC1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/keth_hela/AUC.txt'
-AUC2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/DMSseq_fibroblast_vivo/AUC.txt'
-# compare_AUC(AUC1, AUC2, method1='keth-seq(HeLa)', method2='DMSseq(fibroblast)', savefn='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/kethHeLa_vs_DMSfibroblast.pdf')
 
-AUC1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/keth_hela/AUC.txt'
-AUC2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/DMSseq_K562_vivo/AUC.txt'
-# compare_AUC(AUC1, AUC2, method1='keth-seq(HeLa)', method2='DMSseq(K562)', savefn='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/kethHeLa_vs_DMSK562.pdf')
-
-def plot_structure(shape1, shape2, dot, RNA):
-	out_dict1 = read_icshape_out(shape1)
-	out_dict2 = read_icshape_out(shape2)
-	seq_dict = read_dot(dot)
-	df = pd.read_csv(RNA, header=0, sep='\t')
-	df['seq'] = [seq_dict[i]['seq'] for i in df['seq_id']]
-	df['dot'] = [seq_dict[i]['dotstr'] for i in df['seq_id']]
-	df['keth-seq'] = [','.join(out_dict1[i]['reactivity_ls']) for i in df['seq_id']]
-	df['icSHAPE'] = [','.join(out_dict2[i]['reactivity_ls']) for i in df['seq_id']]
-	savefn = RNA.replace('.txt', '.info.txt')
-	df.to_csv(savefn, header=True, index=False, sep='\t')
-
-shape1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-11-14_7_library_total_Kethoxal_remove/kethoxalseq_noTreat.rfam.T1t10.out'
-shape2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mes/wc/out/shape.out'
-dot = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/mouse.dot'
-RNA = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/keth_vs_icshape.txt'
-# plot_structure(shape1, shape2, dot, RNA)
-
-def dot_ss_ds(dot):
-	dot_ss_ds = dot.replace('.dot', '.ss_ds.icshape.txt')
-	seq_dict = read_dot(dot)
-	with open(dot_ss_ds, 'w') as SAVEFN:
-		for i,j in seq_dict.items():
-			ss = j['dotstr'].count('.')
-			ds = j['dotstr'].count('(')+j['dotstr'].count(')')
-			print >>SAVEFN, '\t'.join(map(str, [i, j['seq'], len(j['seq']), ss, ds]))
-	df = pd.read_csv(dot_ss_ds, header=None, sep='\t')
-	df.columns = ['seq_id', 'seq', 'seq_len', 'ss', 'ds']
-	df['log2(ss)'] = np.log2(df['ss'])
-	df['log2(ds)'] = np.log2(df['ds'])
-	df['ratio(ss)'] = [i/float(j) for i,j in zip(df['ss'], df['seq_len'])]
-	df['ratio(ds)'] = [i/float(j) for i,j in zip(df['ds'], df['seq_len'])]
-	print df.head()
-	fig,ax=plt.subplots()
-
-	df.loc[:,['ratio(ss)', 'ratio(ds)']].plot.bar(stacked=True, ax=ax)
-	# df.plot(kind='scatter', x='log2(ss)', y='log2(ds)', ax=ax, s=2)
-
-	# lims = [
- #    np.min([ax.get_xlim(), ax.get_ylim()])-1,  # min of both axes
- #    np.max([ax.get_xlim(), ax.get_ylim()])+1,  # max of both axes
-	# ]
-
-	# # now plot both limits against eachother
-	# ax.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
-	# ax.set_aspect('equal')
-	# ax.set_xlim(lims)
-	# ax.set_ylim(lims)
-
-	plt.tight_layout()
-	plt.savefig(dot_ss_ds.replace('.txt', '.pdf'))
-
-	# keth-seq
-	# shape = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-11-14_7_library_total_Kethoxal_remove/kethoxalseq_noTreat.rfam.T1t10.out'
-	# icSHAPE
-	shape = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mes/wc/out/shape.out'
-	out_dict = read_icshape_out(shape)
-	out_gini = {}
-	out_mean = {}
-	for i,j in out_dict.items():
-		out_gini[i] = gj.gini(out_dict[i]['reactivity_ls'])
-		out_mean[i] = gj.gini(out_dict[i]['reactivity_ls'], mode='mean_reactivity')
-	df = df[df['seq_id'].isin(out_gini.keys())]
-	df['gini'] = [out_gini[i] for i in df['seq_id']]
-	df['mean_reactivity'] = [out_mean[i] for i in df['seq_id']]
-
-	# AUC = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/mouse/AUC.txt'
-	AUC = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mes/wc/out/mouse/AUC.txt'
-	df_AUC = pd.read_csv(AUC, header=0, sep='\t')
-	df = df.merge(df_AUC, on='seq_id', how='inner')
-	df['dot'] = [seq_dict[i]['dotstr'] for i in df['seq_id']]
-	df['reactivity_ls'] = [','.join(out_dict[i]['reactivity_ls']) for i in df['seq_id']]
-
-	df.to_csv(dot_ss_ds.replace('.txt', '.2.txt'), header=True, sep='\t', index=False)
-
-dot = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/Rfam/Parsed_Structure/mouse.dot'
-dot_ss_ds(dot)
-
-
+AUC1 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/F2c.mes_kethseq.AUC.txt'
+AUC2 = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/F2c.mes_icSHAPE.AUC.txt'
+compare_AUC(AUC1, AUC2, savefn='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/F2c.keth_vs_icshape.AUC.pdf')
 
 
 

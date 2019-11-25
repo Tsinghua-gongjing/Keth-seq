@@ -123,100 +123,6 @@ def icshape_in_RG4(out=None, write_noInRG4_fa=1, keep_G_only=0):
 
 	return stat_df.T
 
-def extract_icshape(tx_id='ENST00000372638', start=365, end=415):
-	mRNA_T0t0 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_mRNA_kethoxal.T0t0.out'
-	mRNA_T0t20 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_mRNA_kethoxal.T0t20.out'
-	G4_T0t0 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T0t0.out'
-	G4_T0t20 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T0t20.out'
-	mRNA_T0t0_out = read_icshape_out(mRNA_T0t0)
-	mRNA_T0t20_out = read_icshape_out(mRNA_T0t20)
-	G4_T0t0_out = read_icshape_out(G4_T0t0)
-	G4_T0t20_out = read_icshape_out(G4_T0t20)
-
-	fa_dict = read_fa('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/hg38/transcriptome/hg38_transcriptome.fa')
-
-	save_dir = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time'
-	savefn_sto = save_dir + '/' + '%s.sto'%(tx_id)
-	savefn_shape = save_dir + '/' + '%s.shape'%(tx_id)
-	SAVEFN_STO = open(savefn_sto, 'w')
-	SAVEFN_SHAPE = open(savefn_shape, 'w')
-
-	for i,j in zip([mRNA_T0t0_out, mRNA_T0t20_out, G4_T0t0_out, G4_T0t20_out], ['mRNA_T0t0', 'mRNA_T0t20', 'G4_T0t0', 'G4_T0t20']):
-		if i.has_key(tx_id):
-			print >>SAVEFN_STO, '\t'.join([j, fa_dict[tx_id][start:end]])
-			print >>SAVEFN_SHAPE, '\t'.join(map(str, [j, end-start, i[tx_id]['rpkm'], '\t'.join(i[tx_id]['reactivity_ls'][start:end])]))
-	SAVEFN_STO.close()
-	SAVEFN_SHAPE.close()
-
-def fa_Grich(fa=None, G_ratio=0.5):
-	if fa is None:
-		fa = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T0t20.notinRG4.fa'
-	out = fa.replace('.notinRG4.fa', '.out')
-	out_dict = read_icshape_out(out)
-	savefn = fa.replace('.fa', '.Grich.txt')
-	SAVEFN = open(savefn, 'w')
-	fa_dict = read_fa(fa)
-	for i,j in fa_dict.items():
-		for n in range(len(j)-30):
-			seq_n = j[n:n+30]
-			if seq_n[-3:].upper() == 'GGG' and seq_base_ratio(seq_n) >= G_ratio:
-				gini1 = gj.gini(out_dict[i]['reactivity_ls'][n:n+30], mode='gini', null_pct=0.6)
-				gini2 = gj.gini(out_dict[i]['reactivity_ls'][n:n+30], mode='gini', null_pct=0.4)
-				print >>SAVEFN, '\t'.join(map(str, [i, n, n+30, seq_n, ','.join(out_dict[i]['reactivity_ls'][n:n+30]), gini1, gini2]))
-	SAVEFN.close()
-
-def canonicla_rG4(fa=None, left_n=20):
-	if fa is None:
-		fa = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T0t20.notinRG4.fa'
-	out = fa.replace('.notinRG4.fa', '.out')
-	out_dict = read_icshape_out(out)
-	savefn = fa.replace('.fa', '.canonicla_rG4.txt')
-	SAVEFN = open(savefn, 'w')
-	savefn_left_n = savefn.replace('.txt', '.left%s.txt'%(left_n))
-	SAVEFN_LEFT = open(savefn_left_n, 'w')
-	fa_dict = read_fa(fa)
-	# pattern = re.compile(r"(G{3,}[A,T,U,C,G]{1,7}){3,}G{3,}")
-	# pattern = re.compile(r"G{3,}[A,T,U,C,G]{1,7}G{3,}")
-
-	rG4_pattern = {'canonicla_rG4': re.compile(r"(G{3,}[A,T,U,C,G]{1,7}){3,}G{3,}"),
-				   'long_loops_1': re.compile(r"G{3,}[A,T,U,C,G]{8,12}G{3,}[A,T,U,C,G]{1,7}G{3,}[A,T,U,C,G]{1,7}G{3,}"),
-				   'long_loops_2': re.compile(r"G{3,}[A,T,U,C,G]{1,7}G{3,}[A,T,U,C,G]{13,21}G{3,}[A,T,U,C,G]{1,7}G{3,}"),
-				   'bulges_1': re.compile(r"G{3,}[A,T,C,G,U]{1,9}G{3,}[A,T,C,G,U]{1,9}([GG[A,T,C]{1,7}G|G[A,T,C]{1,7}GG])[A,T,C,G,U]{1,9}G{3,}"),
-				   'bulges_2': re.compile(r"([GG[A,T,C]G|G[A,T,C]GG])[A,T,C,G,U]{1,9}([GG[A,T,C]G|G[A,T,C]GG])[A,T,C,G,U]{1,9}G{3,}[A,T,C,G,U]{1,9}G{3,}"),
-				   '2quartet': re.compile(r"([G]{2,}[A,T,C,G,U]{1,9}){3,}G{2,}"),
-				  }
-
-	tx_start_end = {}
-	tx_start_end_left = {}
-	for i,j in fa_dict.items():
-		for pattern_category,pattern in rG4_pattern.items():
-			for m in pattern.finditer(j):
-				print m.start(), m.end(), m.group()
-				tx_start_end_id = ','.join(map(str, [i, m.start(), m.end()]))
-				if not tx_start_end.has_key(tx_start_end_id):
-					tx_start_end[tx_start_end_id] = pattern_category
-				else:
-					continue
-				gini1 = gj.gini(out_dict[i]['reactivity_ls'][m.start():m.end()], mode='gini', null_pct=0.6)
-				gini2 = gj.gini(out_dict[i]['reactivity_ls'][m.start():m.end()], mode='gini', null_pct=0.4)
-				gini3 = gj.gini(out_dict[i]['reactivity_ls'][m.start():m.end()], mode='gini', null_pct=0.2)
-				gini4 = gj.gini(out_dict[i]['reactivity_ls'][m.start():m.end()], mode='gini', null_pct=0)
-				print >>SAVEFN, '\t'.join(map(str, [i, m.start(), m.end(), m.group(), ','.join(out_dict[i]['reactivity_ls'][m.start():m.end()]), gini1, gini2, gini3, gini4, pattern_category ]))
-				# print >>SAVEFN, '\t'.join(map(str, [i, n, n+30, seq_n, ','.join(out_dict[i]['reactivity_ls'][n:n+30]), gini1, gini2]))
-
-				if m.start() > left_n:
-					left_start = m.start() - left_n
-					left_end = m.start()
-					tx_start_end_left_id = ','.join(map(str, [i, left_start]))
-					if not tx_start_end_left.has_key(tx_start_end_left_id):
-						tx_start_end_left[tx_start_end_left_id] = pattern_category
-					else:
-						continue
-					gini1 = gj.gini(out_dict[i]['reactivity_ls'][left_start:left_end], mode='gini', null_pct=0.6)
-					gini2 = gj.gini(out_dict[i]['reactivity_ls'][left_start:left_end], mode='gini', null_pct=0.4)
-					print >>SAVEFN_LEFT, '\t'.join(map(str, [i, left_start, left_end, j[left_start:left_end], ','.join(out_dict[i]['reactivity_ls'][left_start:left_end]), gini1, gini2, gini3, gini4, pattern_category ]))
-	SAVEFN.close()
-	SAVEFN_LEFT.close()
 
 def seq_base_ratio(seq=None, base='G'):
 	base_ratio = seq.count(base) / float(len(seq))
@@ -234,108 +140,14 @@ def read_fa2(fa=None):
 	# print fa_dict['NM_001001847:1134-1184']
 	return fa_dict
 
-def Grich_compare(Grich1=None, Grich2=None):
-	if Grich1 is None:
-		Grich1 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_mRNA_kethoxal.T1t20.notinRG4.canonicla_rG4.txt'
-		fa1 = Grich1.replace('.canonicla_rG4.txt', '.fa')
-	if Grich2 is None:
-		Grich2 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T1t20.notinRG4.canonicla_rG4.txt'
-		fa2 = Grich2.replace('.canonicla_rG4.txt', '.fa')
-	df1 = pd.read_csv(Grich1, header=None, sep='\t')
-	df2 = pd.read_csv(Grich2, header=None, sep='\t')
-	header_ls1 = ['tx', 'start', 'end', 'seq', 'reactivity_ls', 'mRNA gini(null=0.6)', 'mRNA gini(null=0.4)', 'mRNA gini(null=0.2)', 'mRNA gini(null=0)', 'pattern_category']
-	header_ls2 = ['tx', 'start', 'end', 'seq', 'reactivity_ls', 'G4 gini(null=0.6)', 'G4 gini(null=0.4)', 'G4 gini(null=0.2)', 'G4 gini(null=0)', 'pattern_category']
-	df1.columns = header_ls1
-	df2.columns = header_ls2
 
-	Grich_region1 = ['%s:%s-%s'%(t,s,e) for t,s,e in zip(df1['tx'], df1['start'], df1['end'])]
-	Grich_region2 = ['%s:%s-%s'%(t,s,e) for t,s,e in zip(df2['tx'], df2['start'], df2['end'])]
-
-	print df1['tx'].value_counts().keys()
-
-	fa_dict1 = read_fa(fa1)
-	fa_dict2 = read_fa(fa2)
-	savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/mRNA_G4.T1t20.tx_overlap.png'
-	gj.venn3plot(mode='string',subsets_ls=[set(fa_dict1.keys()), set(fa_dict2.keys())],labels_ls=['mRNA','G4'],title_str=None,save_fn=savefn,axis=None)
-
-	savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/mRNA_G4.T1t20.canonicla_rG4.tx_overlap.png'
-	gj.venn3plot(mode='string',subsets_ls=[set(df1['tx'].value_counts().keys()), set(df2['tx'].value_counts().keys())],labels_ls=['mRNA', 'G4'],title_str=None,save_fn=savefn,axis=None)
-
-	savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/mRNA_G4.T1t20.canonicla_rG4.tx_region_overlap.png'
-	gj.venn3plot(mode='string',subsets_ls=[set(Grich_region1), set(Grich_region2)],labels_ls=['mRNA', 'G4'],title_str=None,save_fn=savefn,axis=None)
-
-	df1_gini = df1[['tx', 'start', 'end', 'mRNA gini(null=0.6)', 'mRNA gini(null=0.4)', 'mRNA gini(null=0.2)', 'mRNA gini(null=0)', 'pattern_category']]
-	df2_gini = df2[['tx', 'start', 'end', 'G4 gini(null=0.6)', 'G4 gini(null=0.4)', 'G4 gini(null=0.2)', 'G4 gini(null=0)', 'pattern_category']]
-	df_join = pd.merge(df1_gini, df2_gini, on=['tx', 'start', 'end'], how='inner')
-	savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/mRNA_G4.T1t20.canonicla_rG4.gini.txt'
-	df_join.to_csv(savefn, header=True, index=False, sep='\t')
-
-	df_join_1 = df_join[(df_join['mRNA gini(null=0.6)']>0) & (df_join['G4 gini(null=0.6)']>0)]
-	df_join_2 = df_join[(df_join['mRNA gini(null=0.4)']>0) & (df_join['G4 gini(null=0.4)']>0)]
-	df_join_3 = df_join[(df_join['mRNA gini(null=0.2)']>0) & (df_join['G4 gini(null=0.2)']>0)]
-	df_join_4 = df_join[(df_join['mRNA gini(null=0)']>0) & (df_join['G4 gini(null=0)']>0)]
-	df_join_1_morestructure = df_join_1[df_join_1['G4 gini(null=0.6)'] > df_join_1['mRNA gini(null=0.6)']]
-	df_join_2_morestructure = df_join_2[df_join_2['G4 gini(null=0.4)'] > df_join_2['mRNA gini(null=0.4)']]
-	df_join_3_morestructure = df_join_3[df_join_3['G4 gini(null=0.2)'] > df_join_3['mRNA gini(null=0.2)']]
-	df_join_4_morestructure = df_join_4[df_join_4['G4 gini(null=0)'] > df_join_4['mRNA gini(null=0)']]
-
-	print "df_join_1: null=0.6, %s, PDS more structure: %s, less structure: %s"%(df_join_1.shape[0], df_join_1_morestructure.shape[0], df_join_1.shape[0] - df_join_1_morestructure.shape[0])
-	print "df_join_2: null=0.4, %s, PDS more structure: %s, less structure: %s"%(df_join_2.shape[0], df_join_2_morestructure.shape[0], df_join_2.shape[0] - df_join_2_morestructure.shape[0])
-	print "df_join_3: null=0.2, %s, PDS more structure: %s, less structure: %s"%(df_join_3.shape[0], df_join_3_morestructure.shape[0], df_join_3.shape[0] - df_join_3_morestructure.shape[0])
-	print "df_join_4: null=0.0, %s, PDS more structure: %s, less structure: %s"%(df_join_4.shape[0], df_join_4_morestructure.shape[0], df_join_4.shape[0] - df_join_4_morestructure.shape[0])
-
-	fig,ax=plt.subplots(1,4,figsize=(24,6), sharex=True, sharey=True)
-	print df_join_1.head()
-	df_join_1.plot(kind='scatter', x='mRNA gini(null=0.6)', y='G4 gini(null=0.6)', ax=ax[0], alpha=0.5)
-	
-	color_ls = ['#4C72B0', '#55A868', '#C44E52', '#8172B2']
-	rG4_pattern = {'canonicla_rG4': color_ls[0],
-				   'long_loops_1': color_ls[1],
-				   'long_loops_2': color_ls[1],
-				   'long_loops': color_ls[1],
-				   'bulges_1': color_ls[2],
-				   'bulges_2': color_ls[2],
-				   'bulges': color_ls[2],
-				   '2quartet': color_ls[3],
-				  }
-	rG4_pattern_name_dict = {'canonicla_rG4':'canonicla_rG4', 'long_loops_1':'long_loops', 'long_loops_2':'long_loops', 'bulges_1':'bulges', 'bulges_2':'bulges', '2quartet':'2quartet'}
-	
-	for n, (df_join_plot, null_pct) in enumerate(zip([df_join_1, df_join_2, df_join_3, df_join_4], [0.6, 0.4, 0.2, 0])):
-		df_join_plot['seq_len'] = [i-j for i,j in zip(df_join_plot['end'], df_join_plot['start'])]
-		# df_join_plot = df_join_plot[df_join_plot['seq_len']>=30]
-		df_join_plot['pattern_category_y'] = [rG4_pattern_name_dict[i] for i in df_join_plot['pattern_category_y']]
-		pattern_category_ls = df_join_plot['pattern_category_y'].value_counts().keys()
-		df_join_plot_morestructure = df_join_plot[df_join_plot['G4 gini(null=%s)'%(null_pct)] > df_join_plot['mRNA gini(null=%s)'%(null_pct)]]
-		for pattern_category in pattern_category_ls:
-			df_join_1_pattern = df_join_plot[df_join_plot['pattern_category_y'] == pattern_category]
-			print "%s: %s"%(pattern_category, df_join_1_pattern.shape[0])
-			df_join_1_pattern.plot(kind='scatter', x='mRNA gini(null=%s)'%(null_pct), y='G4 gini(null=%s)'%(null_pct), ax=ax[n], alpha=1.0, label='%s(n=%s)'%(pattern_category, df_join_1_pattern.shape[0]), color=rG4_pattern[pattern_category])
-		# plt.text(0.12, 0.9, 'n=%s'%(df_join_plot_morestructure.shape[0]), ha='center', va='center', transform=ax[n].transAxes)
-		# plt.text(0.3, 0.1, 'n=%s'%(df_join_plot.shape[0]-df_join_plot_morestructure.shape[0]), ha='center', va='center', transform=ax[n].transAxes)
-	#df_join_2.plot(kind='scatter', x='mRNA gini(null=0.4)', y='G4 gini(null=0.4)', ax=ax[1], alpha=0.5)
-	#df_join_3.plot(kind='scatter', x='mRNA gini(null=0.2)', y='G4 gini(null=0.2)', ax=ax[2], alpha=0.5)
-	#df_join_4.plot(kind='scatter', x='mRNA gini(null=0)', y='G4 gini(null=0)', ax=ax[3], alpha=0.5)
-	# ax[0].plot([0.45, 1],[0.45, 1],ls='--', color='black')
-	# ax[1].plot([0.45, 1],[0.45, 1],ls='--', color='black')
-	# plt.xticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-	# plt.yticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-	ax[0].set_xlim(0.35,1)
-	ax[0].set_ylim(0.35,1)
-	x = np.linspace(*ax[0].get_xlim())
-	for a in ax:
-		a.plot([0.35,1],[0.35,1],ls='--', color='black')
-		a.legend_.remove()
-	plt.tight_layout()
-	savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/mRNA_G4.T1t20.canonicla_rG4.gini.scatter.png'
-	plt.savefig(savefn)
-	plt.close()
 
 def RG4_compare(RG4_1=None, RG4_2=None, savefn_prefix=None):
-	T_t_cutoff = 'T1t200'
-	if RG4_1 is None:
-		RG4_1 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_mRNA_kethoxal.%s.inRG4.txt'%(T_t_cutoff)
-	if RG4_2 is None:
-		RG4_2 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_G4_kethoxal.%s.inRG4.txt'%(T_t_cutoff)
+	# T_t_cutoff = 'T1t200'
+	# if RG4_1 is None:
+	# 	RG4_1 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_mRNA_kethoxal.%s.inRG4.txt'%(T_t_cutoff)
+	# if RG4_2 is None:
+	# 	RG4_2 = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_G4_kethoxal.%s.inRG4.txt'%(T_t_cutoff)
 	df1 = pd.read_csv(RG4_1, header=None, sep='\t')
 	df2 = pd.read_csv(RG4_2, header=None, sep='\t')
 	header_ls1 = ['tx', 'start', 'end', 'mRNA gini', 'reactivity_ls', 'seq']
@@ -346,7 +158,7 @@ def RG4_compare(RG4_1=None, RG4_2=None, savefn_prefix=None):
 	df2['region'] = ['%s:%s-%s'%(t,s,e) for t,s,e in zip(df2['tx'],df2['start'],df2['end'])]
 
 	# savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-04-03/mRNA_G4.%s.RG4.region_overlap.png'%(T_t_cutoff)
-	savefn = '%s.%s.RG4.region_overlap.png'%(savefn_prefix, T_t_cutoff)
+	savefn = '%s.RG4.region_overlap.png'%(savefn_prefix)
 	gj.venn3plot(mode='string',subsets_ls=[set(df1['region'].value_counts().keys()), set(df2['region'].value_counts().keys())],labels_ls=['mRNA', 'G4'],title_str=None,save_fn=savefn,axis=None)
 
 	df_join = pd.merge(df1, df2, on=['tx', 'start', 'end'], how='inner')
@@ -380,7 +192,7 @@ def RG4_compare(RG4_1=None, RG4_2=None, savefn_prefix=None):
 
 	plt.tight_layout()
 	# savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-04-03/mRNA_G4.%s.RG4.region_gini.scatter.pdf'%(T_t_cutoff)
-	savefn = '%s.%s.RG4.region_gini.scatter.pdf'%(savefn_prefix, T_t_cutoff)
+	savefn = '%s.RG4.region_gini.scatter.pdf'%(savefn_prefix)
 	plt.savefig(savefn)
 	plt.close()
 
@@ -593,85 +405,19 @@ def plot_vivo_vitro_rt():
 	# df.to_csv(txt.replace('.txt', '.rt.txt'), header=True, index=False, sep='\t')
 
 def main():
-	# read_RG4_regions()
-	# icshape_in_RG4('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/icshape/HeLa_smartSHAPE/HeLa_smartSHAPE_T2t200.out', keep_G_only=0)
+	icshape_in_RG4('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.shape.out', keep_G_only=0)
+	icshape_in_RG4('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.PDS.shape.out', keep_G_only=0)
+	RG4_1='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.shape.inRG4.txt'
+	RG4_2='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.PDS.shape.inRG4.txt'
+	savefn_prefix = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/in_vivo_mRNA_rG4'
+	RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
 
-	# """
-	# T_t_cutoff_ls = ['T0t0', 'T0t20', 'T1t20', 'T2t20']
-	# T_t_cutoff_ls = ['T0t20']
-	# out_ls = ['/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_%s_kethoxal.%s.out'%(j, i) for i in T_t_cutoff_ls for j in ['mRNA', 'G4']]
-	# stat_df_ls = []
-	# for out in out_ls:
-	# 	stat_df = icshape_in_RG4(out, keep_G_only=0)
-	# 	stat_df_ls.append(stat_df)
-	# stat_df_all = pd.concat(stat_df_ls)
-	# print stat_df_all
-	# savefn = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/RG4_regions_stat.txt'
-	# stat_df_all.to_csv(savefn, header=True, index=True, sep='\t')
-	# """
-
-	# extract_icshape()
-	# fa_Grich()
-	# canonicla_rG4('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4_kethoxal.T2t20.notinRG4.fa', left_n=30)
-	# Grich_compare()
-	# RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_mRNA_kethoxal.T0t20.inRG4.txt'
-	# RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/icshape/HeLa_smartSHAPE/HeLa_smartSHAPE_T2t200.inRG4.txt'
-	# RG4_compare(RG4_1=None, RG4_2=None)
-
-
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_G4_kethoxal.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_mRNA_kethoxal.T1t200.out', keep_G_only=0)
-
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-19/in_vitro_G4OvermRNA_kethoxal.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-03/in_vivo_G4OvermRNA_kethoxal.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_G4OvermRNA_kethoxal.T1t200.out', keep_G_only=0)
-
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-19/in_vitro_mRNA_kethoxal_controlrG4seqK.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-19/in_vitro_G4_kethoxal_controlrG4seqKPDS.T1t200.out', keep_G_only=0)
-
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/in_vitro_G4_kethoxal.T1t200.out', keep_G_only=1)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/in_vitro_mRNA_kethoxal.T1t200.out', keep_G_only=1)
-
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_G4.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_mRNA.T1t200.out', keep_G_only=0)
-
-	# icshape_in_RG4(out='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/in_vivo_mRNA_kethoxal.T0t20test.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_G4_ATCG.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_mRNA_ATCG.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_G4_G.T1t200.out', keep_G_only=0)
-	# icshape_in_RG4(out='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_mRNA_G.T1t200.out', keep_G_only=0)
-
-	# RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-19/in_vitro_mRNA_kethoxal_controlrG4seqK.T1t200.inRG4.txt'
-	# RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-04-19/in_vitro_G4_kethoxal_controlrG4seqKPDS.T1t200.inRG4.txt'
-	# savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-04-19/in_vitro_G4_mRNA_rG4seqControl'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-
-	RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/in_vitro_mRNA_kethoxal.T1t200.inRG4.txt'
-	RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/in_vitro_G4_kethoxal.T1t200.inRG4.txt'
-	savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-07-05/in_vitro_G4_mRNA'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-
-	RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_mRNA_ATCG.T1t200.inRG4.txt'
-	RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_G4_ATCG.T1t200.inRG4.txt'
-	savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-07-05/icshapepipe.ATCG.in_vitro_G4_mRNA'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-	RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_mRNA_G.T1t200.inRG4.txt'
-	RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/19-07-05/calcG/in_vitro_G4_G.T1t200.inRG4.txt'
-	savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/19-07-05/icshapepipe.G.in_vitro_G4_mRNA'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-
-	RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_mRNA_ATCG.T1t200.inRG4.txt'
-	RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_G4_ATCG.T1t200.inRG4.txt'
-	savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/icshapepipe.ATCG.in_vivo_G4_mRNA'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-	RG4_1='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_mRNA_G.T1t200.inRG4.txt'
-	RG4_2='/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-09-09_10_library_G4-glucose_time/calcG/in_vivo_G4_G.T1t200.inRG4.txt'
-	savefn_prefix = '/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-09-09_10_library_G4-glucose_time/icshapepipe.G.in_vivo_G4_mRNA'
-	# RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
-
-	# in_vivo_in_vitro_compare()
-	in_vivo_in_vitro_compare_reactivity()
-	# plot_vivo_vitro_rt()
+	icshape_in_RG4('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.invitro.shape.out', keep_G_only=0)
+	icshape_in_RG4('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.invitro.PDS.shape.out', keep_G_only=0)
+	RG4_1='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.invitro.shape.inRG4.txt'
+	RG4_2='/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/HeLa_kethoxal_vs_no-treat.invitro.PDS.shape.inRG4.txt'
+	savefn_prefix = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/data/rG4/in_vitro_mRNA_rG4'
+	RG4_compare(RG4_1=RG4_1, RG4_2=RG4_2, savefn_prefix=savefn_prefix)
 
 if __name__ == '__main__':
 	main()

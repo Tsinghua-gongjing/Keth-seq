@@ -173,8 +173,8 @@ def compare_RT_plot(compare_RT_txt=None):
 		rpkm_dict_ls.append(val_dict)
 
 	df = pd.read_csv(compare_RT_txt, header=0, sep='\t')
-	# df['allGt0'] = [0 if i==0 and j==0 else 1 for i,j in zip(list(df['RTstop1']), list(df['RTstop2']))]
-	df['allGt0'] = [1 if i > 0 and j > 0 else 0 for i,j in zip(list(df['RTstop1']), list(df['RTstop2']))]
+	df['allGt0'] = [0 if i==0 and j==0 else 1 for i,j in zip(list(df['RTstop1']), list(df['RTstop2']))]
+	# df['allGt0'] = [1 if i > 0 and j > 0 else 0 for i,j in zip(list(df['RTstop1']), list(df['RTstop2']))]
 	df = df[df['allGt0'] == 1]
 	df_rpkm = pd.DataFrame.from_dict({'rep1':[np.log2(rpkm_dict_ls[0][i]) for i in set(list(df['tx']))], 'rep2':[np.log2(rpkm_dict_ls[1][i]) for i in set(list(df['tx']))]})
 	fig, ax = plt.subplots(figsize=(3,5))
@@ -202,8 +202,8 @@ def compare_RT_plot(compare_RT_txt=None):
 	fig,ax = plt.subplots(figsize=(6,6))
 	# base_ls = df['base'].value_counts().keys()
 	base_ls = ['A', 'T', 'C', 'G']
-	# color_ls = ['#4C72B0', '#55A868', '#C44E52', '#8172B2']
-	color_ls = ['#d02e30', '#57a455', '#e9e847', 'grey']
+	color_ls = ['#4C72B0', '#55A868', '#C44E52', '#8172B2']
+	# color_ls = ['#d02e30', '#57a455', '#e9e847', 'grey']
 	color_ls_dict = dict(zip(base_ls, color_ls))
 	df['color'] = [color_ls_dict[i] for i in df['base']]
 	"""
@@ -217,9 +217,9 @@ def compare_RT_plot(compare_RT_txt=None):
 	"""
 
 	#sns.pointplot(x='log2(RTstop1)', y='log2(RTstop2)', data=df.iloc[0:10000,:], hue='base', linestyles='', ax=ax, ci=None)
-	# ax.scatter(df['log2(RTstop1)'], df['log2(RTstop2)'], c=df['color'], alpha=0.5, s=0.8)
-	g = sns.FacetGrid(df, col='base', hue='base', sharex=True, sharey=True)
-	g.map(sns.kdeplot, 'log2(RTstop1)', 'log2(RTstop2)')
+	ax.scatter(df['log2(RTstop1)'], df['log2(RTstop2)'], c=df['color'], alpha=0.5, s=0.8)
+	# g = sns.FacetGrid(df, col='base', hue='base', sharex=True, sharey=True)
+	# g.map(sns.kdeplot, 'log2(RTstop1)', 'log2(RTstop2)')
 
 	savefn = compare_RT_txt.replace('.txt', '.png')
 	plt.title('R2=%s, pvalue=%s'%(r, p))
@@ -237,9 +237,10 @@ def compare_RT_plot(compare_RT_txt=None):
 
 def main():
 	# compare_RT()
-	compare_RT_plot('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-11-14_7_library_total_Kethoxal_remove/kethoxal_rep_RT_corr.txt')
+	# compare_RT_plot('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-11-14_7_library_total_Kethoxal_remove/kethoxal_rep_RT_corr.txt')
 	# compare_RT_plot('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-11-14_7_library_total_Kethoxal_remove/control_rep_RT_corr.txt')
 	# compare_RT_plot('/Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/result/16-11-14_7_library_total_Kethoxal_remove/notreat_rep_raw_RT_corr.T0t0.txt')
+	compare_RT_plot('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/F2a.kethoxal_rep_RT_corr.txt')
 
 if __name__ == '__main__':
 	main()

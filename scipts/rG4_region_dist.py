@@ -13,7 +13,7 @@ from pyfasta import Fasta
 import os
 from scipy import stats
 
-fig, ax = plt.subplots(1,3,figsize=(12,4))
+fig, ax = plt.subplots(1,2,figsize=(8,4))
 
 # in vitro, our control
 sizes = [11, 34, 35, 15]
@@ -33,12 +33,12 @@ ax[1].pie(sizes, labels=labels,
 ax[1].axis('equal')
 
 # in vitro, Rg4-seq control
-sizes = [14, 56, 62, 15]
-labels = ["UTR'5", 'CDS', "UTR'3", 'Others']
-total = sum(sizes)
-ax[2].pie(sizes, labels=labels, 
-        autopct=lambda(p): '{:.0f}'.format(p * total / 100), shadow=False, startangle=140)
-ax[2].axis('equal')
+# sizes = [14, 56, 62, 15]
+# labels = ["UTR'5", 'CDS', "UTR'3", 'Others']
+# total = sum(sizes)
+# ax[2].pie(sizes, labels=labels, 
+#         autopct=lambda(p): '{:.0f}'.format(p * total / 100), shadow=False, startangle=140)
+# ax[2].axis('equal')
 
-plt.savefig('./in_vivo_vitro_rG4_element_dist_pie.pdf')
+plt.savefig('/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/Sf12be.in_vivo_vitro_rG4_element_dist_pie.pdf')
 plt.show()

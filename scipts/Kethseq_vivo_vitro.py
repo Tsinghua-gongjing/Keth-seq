@@ -101,25 +101,25 @@ def plot_gini_compare(save_dir=None):
 	df_all.to_csv(savefn, index=False, header=True, sep='\t')
 	print df_all.head()
 
-	df_all_melt = pd.melt(df_all, id_vars=['tx', 'null_pct_cutoff', 'condition', 'T_t_cutoff'], value_vars=['vivo', 'vitro'], var_name='vivo/vitro', value_name='Gini')
-	df_all_melt['condition'] = ['%s,%s'%(i,j) for i,j in zip(df_all_melt['condition'], df_all_melt['vivo/vitro'])]
-	print df_all_melt.head()
-	df_all_melt.sort_values(by=['condition', 'T_t_cutoff'], inplace=True)
-	df_all_melt = df_all_melt[df_all_melt['null_pct_cutoff'].isin([0.4, 0.6])]
-	df_all_melt = df_all_melt[df_all_melt['T_t_cutoff'].isin(['T0t0', 'T0t20', 'T1t20'])]
-	df_all_melt.to_csv(savefn.replace('.txt', '.plot.txt'), index=False, header=True, sep='\t')
-	g = sns.FacetGrid(data=df_all_melt, row='T_t_cutoff', col='null_pct_cutoff', sharey=True, margin_titles=True)
-	g = g.map(sns.boxplot, 'condition', 'Gini', )
-	g.set_xticklabels(rotation=90)
-	g.set(ylim=(0.5,1))
-	g.savefig(savefn.replace('.txt', '.png'))
-	plt.close()
+	# df_all_melt = pd.melt(df_all, id_vars=['tx', 'null_pct_cutoff', 'condition', 'T_t_cutoff'], value_vars=['vivo', 'vitro'], var_name='vivo/vitro', value_name='Gini')
+	# df_all_melt['condition'] = ['%s,%s'%(i,j) for i,j in zip(df_all_melt['condition'], df_all_melt['vivo/vitro'])]
+	# print df_all_melt.head()
+	# df_all_melt.sort_values(by=['condition', 'T_t_cutoff'], inplace=True)
+	# df_all_melt = df_all_melt[df_all_melt['null_pct_cutoff'].isin([0.4, 0.6])]
+	# df_all_melt = df_all_melt[df_all_melt['T_t_cutoff'].isin(['T0t0', 'T0t20', 'T1t20'])]
+	# df_all_melt.to_csv(savefn.replace('.txt', '.plot.txt'), index=False, header=True, sep='\t')
+	# g = sns.FacetGrid(data=df_all_melt, row='T_t_cutoff', col='null_pct_cutoff', sharey=True, margin_titles=True)
+	# g = g.map(sns.boxplot, 'condition', 'Gini', )
+	# g.set_xticklabels(rotation=90)
+	# g.set(ylim=(0.5,1))
+	# g.savefig(savefn.replace('.txt', '.png'))
+	# plt.close()
 
-	g = sns.FacetGrid(data=df_all_melt, row='T_t_cutoff', col='null_pct_cutoff', sharey=True, margin_titles=True)
-	g = g.map(sns.countplot, 'condition',)
-	g.set_xticklabels(rotation=90)
-	g.savefig(savefn.replace('.txt', '.count.png'))
-	plt.close()
+	# g = sns.FacetGrid(data=df_all_melt, row='T_t_cutoff', col='null_pct_cutoff', sharey=True, margin_titles=True)
+	# g = g.map(sns.countplot, 'condition',)
+	# g.set_xticklabels(rotation=90)
+	# g.savefig(savefn.replace('.txt', '.count.png'))
+	# plt.close()
 
 	df_select = df_all_melt[(df_all_melt['null_pct_cutoff']==0.4) & (df_all_melt['T_t_cutoff']=='T1t20') & df_all_melt['condition'].isin(['mRNA,vivo', 'mRNA,vitro'])]
 	print df_select
@@ -151,11 +151,11 @@ def main():
 	T_ls = [1, ]
 	t_ls = [20, ]
 	save_dir = '/Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/results/vivo_vitro_gini'
-	for T,t in zip(T_ls, t_ls):
-		compare_structure_gini(T=T, t=t, save_dir=save_dir)
+	# for T,t in zip(T_ls, t_ls):
+		# compare_structure_gini(T=T, t=t, save_dir=save_dir)
 	# """
 
-	# plot_gini_compare()
+	plot_gini_compare()
 
 if __name__ == '__main__':
 	main()
