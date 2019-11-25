@@ -1,40 +1,51 @@
-Sender: LSF System <zlsfadmin@node532>
-Subject: Job 145018: </Share/home/zhangqf5/anaconda2/bin/python Kethseq_icshape_18S_diff_AUC.py> in cluster <zcluster> Done
+Sender: LSF System <zlsfadmin@node528>
+Subject: Job 145029: </Share/home/zhangqf5/anaconda2/bin/python sam_RT_base_ratio.py> in cluster <zcluster> Done
 
-Job </Share/home/zhangqf5/anaconda2/bin/python Kethseq_icshape_18S_diff_AUC.py> was submitted from host <zio01> by user <zhangqf5> in cluster <zcluster>.
-Job was executed on host(s) <node532>, in queue <Z-ZQF>, as user <zhangqf5> in cluster <zcluster>.
+Job </Share/home/zhangqf5/anaconda2/bin/python sam_RT_base_ratio.py> was submitted from host <zio01> by user <zhangqf5> in cluster <zcluster>.
+Job was executed on host(s) <node528>, in queue <Z-ZQF>, as user <zhangqf5> in cluster <zcluster>.
 </Share2/home/zhangqf5> was used as the home directory.
 </Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/Keth-seq/scipts> was used as the working directory.
-Started at Mon Nov 25 15:32:17 2019
-Results reported on Mon Nov 25 15:32:23 2019
+Started at Mon Nov 25 16:37:25 2019
+Results reported on Mon Nov 25 16:42:19 2019
 
 Your job looked like:
 
 ------------------------------------------------------------
 # LSBATCH: User input
-/Share/home/zhangqf5/anaconda2/bin/python Kethseq_icshape_18S_diff_AUC.py
+/Share/home/zhangqf5/anaconda2/bin/python sam_RT_base_ratio.py
 ------------------------------------------------------------
 
 Successfully completed.
 
 Resource usage summary:
 
-    CPU time :                                   8.21 sec.
+    CPU time :                                   48.22 sec.
+    Max Memory :                                 363 MB
+    Average Memory :                             147.52 MB
     Total Requested Memory :                     -
     Delta Memory :                               -
+    Max Swap :                                   1719 MB
+    Max Processes :                              3
+    Max Threads :                                23
 
 The output (if any) follows:
 
-original 1869
-converted 1 1869
-converted 2 1870
-..(((((...(((.)))).).((((((((((.(((((((((.....(((.(((..((...(((....((..........))...)))))......(((......((((..((..((....(((..................((((....(((((((.....))))))).....)))).......((((...((((((......))))))...))))....((((((.......(((((.((((...((((.((((((((....))))))))..)))).))))....)))))......))))))...........((((.((((......))))))))....)))...))))..))))(((..(.(((....((((((((.......))))))))))).....))))...((((((((....))))...))))))).((((((..........)))))).((((....))))...)))))).).....(.(((...(((((...))))).)))).)).))))))....(((((((((.(((....)))..)))))).)))......(((.(((.......)))).)).........(((((((((....((((.....((.))))).......)))))))))).))))))))))..........(((((.....((((...(((.......(((.(((((((((((((.((((....))))....))))))))..)))))))).......((((.(((((...(((((((......)))))))....)))))))))................................................................................................................................(((((((((..(((((((((..((((((((...(((......)))......))))))))..))....(..((....)))))))))).))))).))))...)))...))))....((((((...((...((((.........))))...))))))))..........((((((.(((..((((((((.(((((....)))))))))))))..)))...((..))))...)))....))).)))..(((.....((((....))))....)))...)))..(((((.(((((((..((..((((((((((((((((....((((........))))........(((((((....(((((........((((((........))))))......)))))...((.((((..(((((((((...(((((((((....)))..((((......))))..)))))).....((((.(((.((((..((((....(((..((((....)))).)))....))))..)))))))..((((((((.....))))))))....))))...)))).)))...).))))))).....)))))))...)).))))))).))...(((((((.....(((.......((..((((....))))..)).....))).....)))))))......(...((((((((........))))))))...).....))))).....((((((((.......))))))))......))...)))))))))).))....((.((.(.((((((((.((.((((((((((((..(((((((((((((((.((((((((((((.....))))))))))))...)))))))))))))))..))))))))))))).)))))))))..).))..))....((((((((((....))))))))))......... 1870
-original 1869
-converted 1870
-plot: 0, kethoxal
-plot: 1, icshape2_panpan
-plot: 0, kethoxal
-plot: 1, icshape2_panpan
+[read_bed] 2019-11-25 16:39:43
+  - fa: /Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mm10/transcriptome/mm10_transcriptome.fa
+  - bed: /Share2/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/16-11-14_7_library_total_Kethoxal_remove/test.map.plus.bed
+[read_fa] 2019-11-25 16:39:44
+  - fa: /Share/home/zhangqf5/gongjing/Kethoxal_RNA_structure/data/mm10/transcriptome/mm10_transcriptome.fa
+['ENSMUST00000119854.7', 'ENSMUST00000204196.1', 'ENSMUST00000070080.5']
+[read_fa] 2019-11-25 16:39:44
+process: 0
+process: 1000000
+process: 2000000
+process: 3000000
+process: 4000000
+process: 5000000
+process: 6000000
+{"A": 1406202, "C": 1450464, "T": 1538725, "G": 1814765}
+[read_bed] 2019-11-25 16:42:18
 
 
 PS:
