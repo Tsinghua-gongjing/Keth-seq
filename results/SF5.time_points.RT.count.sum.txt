@@ -1,0 +1,5 @@
+Control,6210156
+Label 1 min,575969
+Label 2.5 min,547284
+Label 5 min,483962
+Label 10 min,645636

@@ -1,0 +1,6 @@
+No treat1,6210156.0
+No treat2,6060175.0
+Remove rep1,7803268.0
+Remove rep2,7924683.0
+Kethoxal rep1,8788418.0
+Kethoxal rep2,10525569.0
